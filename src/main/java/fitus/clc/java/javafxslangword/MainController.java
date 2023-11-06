@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.nio.file.Files;
@@ -39,7 +41,7 @@ public class MainController {
     @FXML
     private TextField searchInput;
     @FXML
-    private ChoiceBox<String> searchOption;
+    private ComboBox<String> searchOption;
     @FXML
     private Label infoLabel;
     @FXML
@@ -53,12 +55,24 @@ public class MainController {
     @FXML
     TableView<Word> SWTable;
     @FXML
-    public TableColumn<Word, String> keywordColumn;
+    private TableColumn<Word, String> keywordColumn;
     @FXML
-    public TableColumn<Word, String> definitionColumn;
+    private TableColumn<Word, String> definitionColumn;
     @FXML
-    public TableColumn<Word, Void> actionsColumn;
+    private TableColumn<Word, Void> actionsColumn;
+
+    /*
+    On this day slang word
+     */
+    @FXML
+    private Label otdWordLabel;
+    @FXML
+    private Label otdDefinitionLabel;
+    @FXML
+    private Label todayLabel;
+
     private DatabaseController dbController;
+
 
     @FXML
     public void initialize() {
@@ -98,7 +112,11 @@ public class MainController {
         actionsColumn.setCellFactory(param -> new SWAction());
 
         resetBtn.setOnAction(this::handleReset);
+
+        // On this day slang word
+        setEverydayWord();
     }
+
     private void refetchTable() {
         searchInput.setStyle(null);
         infoLabel.setVisible(false);
@@ -157,25 +175,42 @@ public class MainController {
 
             // Clear the table to remove existing data
             SWTable.getItems().clear();
-
+            TreeMap<String, List<String>> foundWords;
+            long startTime, endTime, timeElapsed;
             switch (option) {
                 case "Tìm kiếm theo từ":
-                    long startTime = System.currentTimeMillis();
-                    TreeMap<String, List<String>> foundWords = dbController.searchByWord(keyword);
-                    long endTime = System.currentTimeMillis();
-                    long timeElapsed = endTime - startTime;
+                    startTime = System.currentTimeMillis();
+                    foundWords = dbController.searchByWord(keyword);
+                    endTime = System.currentTimeMillis();
+                    timeElapsed = endTime - startTime;
                     infoLabel.setVisible(true);
-                    infoLabel.setStyle("-fx-text-fill: green");
-                    if (foundWords.size() != 0)
-                        infoLabel.setText("Execution time in milliseconds(" + foundWords.size() + " Results): " + timeElapsed + " ms");
+                    if (foundWords.size() != 0) {
+                        infoLabel.setStyle("-fx-text-fill: green");
+                        infoLabel.setText("Tìm thấy (" + foundWords.size() + " kết quả) trong: " + timeElapsed + " ms");
+                    }
                     else {
-                        infoLabel.setText("Sorry, Can't find that slang word");
+                        infoLabel.setStyle("-fx-text-fill: red");
+                        infoLabel.setText("Xin lỗi, không tìm thấy từ lóng");
                         return;
                     }
                     addDataToTable(foundWords);
 
                     break;
                 case "Tìm kiếm theo định nghĩa":
+                    startTime = System.currentTimeMillis();
+                    foundWords = dbController.searchByDefinition(keyword);
+                    endTime = System.currentTimeMillis();
+                    timeElapsed = endTime - startTime;
+                    infoLabel.setVisible(true);
+                    if (foundWords.size() != 0) {
+                        infoLabel.setStyle("-fx-text-fill: green");
+                        infoLabel.setText("Tìm thấy (" + foundWords.size() + " kết quả) trong: " + timeElapsed + " ms");
+                    } else {
+                        infoLabel.setStyle("-fx-text-fill: red");
+                        infoLabel.setText("Xin lỗi, không có từ lóng nào khớp với định nghĩa");
+                        return;
+                    }
+                    addDataToTable(foundWords);
                     break;
             }
         }
@@ -188,4 +223,39 @@ public class MainController {
             SWTable.getItems().add(new Word(word, String.join(", ", definitions)));
         }
     }
+
+    private void setEverydayWord() {
+        // Get today's date
+        LocalDate today = LocalDate.now();
+
+        // Calculate the index based on the day of the year
+        int dayOfYear = today.getDayOfYear();
+        int index = dayOfYear % dbController.getSize();
+
+        // Retrieve word and definitions
+        TreeMap<String, List<String>>  randomWord = dbController.getSWByIndex(index);
+
+        for (Map.Entry<String, List<String>> entry : randomWord.entrySet()) {
+            String a = entry.getKey();
+            List<String> definitions = entry.getValue();
+
+            System.out.println("Word: " + a);
+            System.out.println("Definitions: " + String.join(", ", definitions));
+        }
+        // Set the labels
+        setEverydayWordLabels(randomWord.firstKey(), randomWord.get(randomWord.firstKey()), today);
+    }
+
+    private void setEverydayWordLabels(String word, List<String> definitions, LocalDate date) {
+        String formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        todayLabel.setText("Ngày: " + formattedDate);
+        otdWordLabel.setText("Từ lóng: " + word);
+
+        String definitionsString = String.join("\n", definitions);
+        final Tooltip tooltipDefinition = new Tooltip();
+        tooltipDefinition.setText(definitionsString);
+        otdDefinitionLabel.setText("Định nghĩa: " + definitionsString);
+        otdDefinitionLabel.setTooltip(tooltipDefinition);
+    }
+
 }

@@ -40,14 +40,8 @@ public class DatabaseController {
         }
     }
 
-    public void showDictionary() {
-        for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
-            String word = entry.getKey();
-            List<String> definitions = entry.getValue();
-
-            System.out.println("Word: " + word);
-            System.out.println("Definitions: " + String.join(", ", definitions));
-        }
+    public int getSize() {
+        return dictionary.size();
     }
 
     public TreeMap<String, List<String>> searchByWord(String keyword) {
@@ -64,6 +58,34 @@ public class DatabaseController {
         return searchResults;
     }
 
+    public TreeMap<String, List<String>> searchByDefinition(String keyword) {
+        TreeMap<String, List<String>> searchResults = new TreeMap<>();
+
+        for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
+            String word = entry.getKey();
+            List<String> definitions = entry.getValue();
+
+            for (String definition : definitions) {
+                if (definition.contains(keyword)) {
+                    searchResults.put(word, definitions);
+                    break; // Break after the first match is found for each word
+                }
+            }
+        }
+        return searchResults;
+    }
+
+    public TreeMap<String, List<String>>  getSWByIndex(int index) {
+        int currentIndex = 0;
+        TreeMap<String, List<String>> randomWord = new TreeMap<>();
+        for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
+            if (currentIndex == index) {
+                randomWord.put(entry.getKey(), entry.getValue());
+            }
+            currentIndex++;
+        }
+        return randomWord;
+    }
 
 
     public TreeMap<String, List<String>> getDictionary() {
