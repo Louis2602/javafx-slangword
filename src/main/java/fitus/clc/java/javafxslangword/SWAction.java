@@ -8,8 +8,8 @@ import javafx.scene.layout.HBox;
 
 public class SWAction extends TableCell<Word, Void> {
     private final HBox actionsContainer = new HBox();
-    private final Button editButton = new Button();
-    private final Button deleteButton = new Button();
+    private final Button editBtn = new Button();
+    private final Button deleteBtn = new Button();
 
     public SWAction() {
         // Load icon images
@@ -22,19 +22,19 @@ public class SWAction extends TableCell<Word, Void> {
         ImageView deleteImageView = new ImageView(deleteImage);
 
         // Set the desired size for the icons (width and height)
-        editImageView.setFitWidth(16); // Set the desired width
-        editImageView.setFitHeight(16); // Set the desired height
+        editImageView.setFitWidth(18); // Set the desired width
+        editImageView.setFitHeight(18); // Set the desired height
 
-        deleteImageView.setFitWidth(16); // Set the desired width
-        deleteImageView.setFitHeight(16); // Set the desired height
+        deleteImageView.setFitWidth(18); // Set the desired width
+        deleteImageView.setFitHeight(18); // Set the desired height
 
         // Set the icon images for the buttons
-        editButton.setGraphic(editImageView);
-        deleteButton.setGraphic(deleteImageView);
+        editBtn.setGraphic(editImageView);
+        deleteBtn.setGraphic(deleteImageView);
 
         actionsContainer.setSpacing(10);
-        actionsContainer.getChildren().addAll(editButton, deleteButton);
-        editButton.setOnAction(event -> {
+        actionsContainer.getChildren().addAll(editBtn, deleteBtn);
+        editBtn.setOnAction(event -> {
             // Handle edit action here
             // You can access the associated Word object using getTableRow().getItem()
             Word word = getTableRow().getItem();
@@ -45,7 +45,7 @@ public class SWAction extends TableCell<Word, Void> {
             }
         });
 
-        deleteButton.setOnAction(event -> {
+        deleteBtn.setOnAction(event -> {
             // Handle delete action here
             // You can access the associated Word object using getTableRow().getItem()
             Word word = getTableRow().getItem();

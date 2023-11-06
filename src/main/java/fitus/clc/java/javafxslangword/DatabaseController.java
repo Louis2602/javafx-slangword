@@ -50,6 +50,22 @@ public class DatabaseController {
         }
     }
 
+    public TreeMap<String, List<String>> searchByWord(String keyword) {
+        TreeMap<String, List<String>> searchResults = new TreeMap<>();
+
+        for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
+            String word = entry.getKey();
+            List<String> definitions = entry.getValue();
+
+            if (word.contains(keyword)) {
+                searchResults.put(word, definitions);
+            }
+        }
+        return searchResults;
+    }
+
+
+
     public TreeMap<String, List<String>> getDictionary() {
         return dictionary;
     }
