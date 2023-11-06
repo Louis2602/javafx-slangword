@@ -1,8 +1,8 @@
 package fitus.clc.java.javafxslangword;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
-import javafx.application.Platform;
 
 
 public class DatabaseController {
@@ -18,32 +18,38 @@ public class DatabaseController {
             String line;
             while ((line = br.readLine()) != null) {
                 String finalLine = line;
-                List<String> meaningsList = new ArrayList<String>();
+                List<String> definitionsList = new ArrayList<String>();
 
-                Platform.runLater(() -> {
-                    try {
-                        if (!finalLine.contains("`")) {
-                            return;
-                        }
-                        //split line `
-                        var split = finalLine.split("`");
-                        //split |
-                        String[] meanings = split[1].split("\\| ");
-
-                        System.out.println("MEANING:" + meanings);
-
-                        Collections.addAll(meaningsList, meanings);
-                        dictionary.put(split[0], meaningsList);
-                    } catch (Exception e) {
-                        System.out.println("Error line: " + finalLine);
+                try {
+                    if (!finalLine.contains("`")) {
+                        return;
                     }
+                    //split line `
+                    var split = finalLine.split("`");
+                    //split |
+                    String[] definitions = split[1].split("\\| ");
 
-                });
+                    Collections.addAll(definitionsList, definitions);
+                    dictionary.put(split[0], definitionsList);
+                } catch (Exception e) {
+                    System.out.println("Error line: " + finalLine);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void showDictionary() {
+        for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
+            String word = entry.getKey();
+            List<String> definitions = entry.getValue();
+
+            System.out.println("Word: " + word);
+            System.out.println("Definitions: " + String.join(", ", definitions));
+        }
+    }
+
     public TreeMap<String, List<String>> getDictionary() {
         return dictionary;
     }

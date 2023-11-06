@@ -3,27 +3,36 @@ package fitus.clc.java.javafxslangword;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Word {
-    SimpleStringProperty word;
-    SimpleStringProperty definition;
+    private final SimpleStringProperty keyword;
+    private final SimpleStringProperty definitions;
 
-    public Word(String word, String definition) {
-        this.word = new SimpleStringProperty(word);
-        this.definition = new SimpleStringProperty(definition);
+    public Word(String keyword, String definitions) {
+        this.keyword = new SimpleStringProperty(keyword);
+        this.definitions = new SimpleStringProperty(definitions);
     }
 
-    public String getWord() {
-        return word.get();
+
+    public SimpleStringProperty keywordProperty() {
+        return keyword;
     }
 
-    public String getDefinition() {
-        return definition.get();
+    public SimpleStringProperty definitionsProperty() {
+        return definitions;
     }
 
-    public void setWord(String newValue) {
-        word.set(newValue);
+    public String getKeyword() {
+        return keyword.get();
     }
 
-    public void setDefinition(String newValue) {
-        definition.set(newValue);
+    public void setKeyword(String _keyword) {
+        keyword.set(_keyword);
+    }
+
+    public String getDefinitions() {
+        return definitions.get();
+    }
+
+    public void setDefinitions(String _definitions) {
+        definitions.set(_definitions);
     }
 }
