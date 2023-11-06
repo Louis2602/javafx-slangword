@@ -1,16 +1,38 @@
 package fitus.clc.java.javafxslangword;
 
-
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 public class SWAction extends TableCell<Word, Void> {
     private final HBox actionsContainer = new HBox();
-    private final Button editButton = new Button("Edit");
-    private final Button deleteButton = new Button("Delete");
+    private final Button editButton = new Button();
+    private final Button deleteButton = new Button();
 
     public SWAction() {
+        // Load icon images
+        Image editImage = new Image(getClass().getResourceAsStream("/assets/edit-icon.png"));
+        Image deleteImage = new Image(getClass().getResourceAsStream("/assets/delete-icon.png"));
+
+
+        //Create ImageView objects for the images and set their sizes
+        ImageView editImageView = new ImageView(editImage);
+        ImageView deleteImageView = new ImageView(deleteImage);
+
+        // Set the desired size for the icons (width and height)
+        editImageView.setFitWidth(16); // Set the desired width
+        editImageView.setFitHeight(16); // Set the desired height
+
+        deleteImageView.setFitWidth(16); // Set the desired width
+        deleteImageView.setFitHeight(16); // Set the desired height
+
+        // Set the icon images for the buttons
+        editButton.setGraphic(editImageView);
+        deleteButton.setGraphic(deleteImageView);
+
+        actionsContainer.setSpacing(10);
         actionsContainer.getChildren().addAll(editButton, deleteButton);
         editButton.setOnAction(event -> {
             // Handle edit action here
