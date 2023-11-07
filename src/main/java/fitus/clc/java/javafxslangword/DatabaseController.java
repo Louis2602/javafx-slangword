@@ -9,6 +9,8 @@ public class DatabaseController {
     final String SLANG_DEFAULT_DB = "slang-default.txt";
     final String HISTORY_DB = "history.txt";
     private final TreeMap<String, List<String>> dictionary = new TreeMap<>();
+    private final ArrayList<History> historyList = new ArrayList<>();
+
 
     DatabaseController() {
         try {
@@ -68,7 +70,7 @@ public class DatabaseController {
             for (String definition : definitions) {
                 if (definition.contains(keyword)) {
                     searchResults.put(word, definitions);
-                    break; // Break after the first match is found for each word
+                    break;
                 }
             }
         }
@@ -101,7 +103,6 @@ public class DatabaseController {
 
         // Save the updated dictionary to the file
         saveDictionaryToFile(SLANG_DB);
-
         return dictionary;
     }
 
@@ -128,7 +129,54 @@ public class DatabaseController {
         }
     }
 
+    public Boolean deleteSlangWord(String keyword) {
+        String returned_value = ((List<String>)dictionary.remove(keyword)).toString();
+        if(returned_value != null) {
+            // delete successfully, update DB
+            saveDictionaryToFile(SLANG_DB);
+            return true;
+        }
+        return false;
+    }
+
+    public void addToHistory(String searchWord, String time) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(HISTORY_DB, true));
+            bw.write(time);
+            bw.write(":");
+            bw.write(searchWord);
+            bw.write("\n");
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<History> loadHistory() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(HISTORY_DB));
+            String line;
+            while ((line = br.readLine()) != null) {
+                var data = line.split(":");
+                String time = data[0];
+                String keyword = data[1];
+
+                History history = new History(keyword, time);
+
+                historyList.add(history);
+           }
+            return historyList;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public TreeMap<String, List<String>> getDictionary() {
         return dictionary;
+    }
+
+    public ArrayList<History> getHistory() {
+        return historyList;
     }
 }

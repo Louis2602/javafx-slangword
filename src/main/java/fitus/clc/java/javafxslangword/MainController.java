@@ -2,11 +2,13 @@ package fitus.clc.java.javafxslangword;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -18,7 +20,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import org.controlsfx.control.action.Action;
 
 import java.io.IOException;
 
@@ -31,8 +32,6 @@ public class MainController {
     private TextField newWordInput;
     @FXML
     private TextField newDefinitionInput;
-    @FXML
-    private Button addBtn;
     /*
     Search Pane
      */
@@ -62,6 +61,16 @@ public class MainController {
     private TableColumn<Word, Void> actionsColumn;
 
     /*
+    History Table Pane
+     */
+    @FXML
+    TableView<History> historyTable;
+    @FXML
+    private TableColumn<History, String> textColumn;
+    @FXML
+    private TableColumn<History, String> timeColumn;
+
+    /*
     On this day slang word
      */
     @FXML
@@ -79,6 +88,7 @@ public class MainController {
         dbController = new DatabaseController();
 
         TreeMap<String, List<String>> dictionary = dbController.getDictionary();
+        ArrayList<History> historyList = dbController.loadHistory();
 
         searchOption.getItems().addAll("Tìm kiếm theo từ", "Tìm kiếm theo định nghĩa");
         searchOption.setValue("Tìm kiếm theo từ");
@@ -105,19 +115,33 @@ public class MainController {
         // Bind the columns to the appropriate properties in the 'Word' class
         keywordColumn.setCellValueFactory(new PropertyValueFactory<>("keyword"));
         definitionColumn.setCellValueFactory(new PropertyValueFactory<>("definitions"));
-
         // Populate the TableView
         addDataToTable(dictionary);
+
+        // Load history
+        textColumn.setCellValueFactory(new PropertyValueFactory<>("keyword"));
+        timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
+        for(History history: historyList) {
+            addHistoryToTable(history);
+        }
 
         actionsColumn.setCellFactory(param -> new SWAction(dbController));
 
         resetBtn.setOnAction(this::handleReset);
 
+        // Register an event handler for the custom event
+        SWTable.addEventHandler(UpdateTableEvent.UPDATE_EVENT, new EventHandler<UpdateTableEvent>() {
+            @Override
+            public void handle(UpdateTableEvent event) {
+                refetchTable(dbController.getDictionary());
+            }
+        });
+
         // On this day slang word
         setEverydayWord();
     }
 
-    private void refetchTable(TreeMap<String, List<String>> dictionary) {
+    public void refetchTable(TreeMap<String, List<String>> dictionary) {
         searchInput.setStyle(null);
         infoLabel.setVisible(false);
         SWTable.getItems().clear(); // Clear the table
@@ -155,6 +179,12 @@ public class MainController {
     public void handleSearch(ActionEvent event) {
         String keyword = searchInput.getText();
         String option = searchOption.getValue();
+
+        // Add search word to history
+        Date date = new java.util.Date();
+        dbController.addToHistory(keyword, date.toString());
+        History history = new History(keyword, date.toString());
+        addHistoryToTable(history);
 
         if (keyword.isEmpty()) {
             searchInput.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
@@ -212,6 +242,10 @@ public class MainController {
             List<String> definitions = entry.getValue();
             SWTable.getItems().add(new Word(word, String.join(", ", definitions)));
         }
+    }
+
+    public void addHistoryToTable(History history) {
+            historyTable.getItems().add(history);
     }
 
     private void setEverydayWord() {
@@ -273,9 +307,7 @@ public class MainController {
             ButtonType duplicateBtn = new ButtonType("Tạo bản sao", ButtonBar.ButtonData.OK_DONE);
             ButtonType overrideBtn = new ButtonType("Thay thế", ButtonBar.ButtonData.OK_DONE);
 
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Từ " + newWord + " đã tồn tại, bạn muốn Tạo bản sao (duplicate) hay Ghi đè (override)?",
-                    duplicateBtn, overrideBtn);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Từ " + newWord + " đã tồn tại, bạn muốn Tạo bản sao (duplicate) hay Ghi đè (override)?", duplicateBtn, overrideBtn);
             alert.setTitle("Xác nhận");
             alert.setHeaderText("Bạn đang thêm một từ mới vào từ điển Slang Word");
 

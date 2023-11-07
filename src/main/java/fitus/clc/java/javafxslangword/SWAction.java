@@ -1,5 +1,6 @@
 package fitus.clc.java.javafxslangword;
 
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -128,9 +129,33 @@ public class SWAction extends TableCell<Word, Void> {
             // You can access the associated Word object using getTableRow().getItem()
             Word word = getTableRow().getItem();
             if (word != null) {
-                // Implement your delete logic
-                // For example, you can confirm deletion with a dialog
-                System.out.println("Delete button clicked for word: " + word.getKeyword());
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Xóa slang word");
+                alert.setHeaderText("Bạn có chắc là sẽ xóa từ " + word.getKeyword() + " khỏi từ điển Slang Word chứ??");
+                Optional<ButtonType> result = alert.showAndWait();
+
+                if(result.get() == ButtonType.OK) {
+                    // handle delete here
+                    Boolean status =  dbController.deleteSlangWord(word.getKeyword());
+                    if(status) {
+                        Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
+                        alert2.setTitle("Thông báo");
+                        alert2.setHeaderText("Đã xóa từ " + word.getKeyword() + " thành công!");
+                        alert2.showAndWait();
+
+                        Event.fireEvent(getTableView(), new UpdateTableEvent());
+                    } else {
+                        Alert alert2 = new Alert(Alert.AlertType.ERROR);
+                        alert2.setTitle("Lỗi");
+                        alert2.setHeaderText("Đã có lỗi xảy ra!!!");
+                        alert2.setContentText("Không thể xóa từ " + word.getKeyword());
+                        alert2.showAndWait();
+                    }
+
+
+
+                }
+
             }
         });
     }
