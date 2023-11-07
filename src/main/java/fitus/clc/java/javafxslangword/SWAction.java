@@ -119,7 +119,14 @@ public class SWAction extends TableCell<Word, Void> {
 
                 // Show the dialog and wait for user input
                 Optional<Word> result = editDialog.showAndWait();
+                if (result.isPresent()) {
+                    String updatedKeyword = keywordField.getText();
+                    String updatedDefinition = definitionField.getText();
 
+                    dbController.updateSlangWord(word.getKeyword(), updatedKeyword, updatedDefinition);
+
+                    Event.fireEvent(getTableView(), new UpdateTableEvent());
+                }
             }
         });
 
@@ -151,11 +158,7 @@ public class SWAction extends TableCell<Word, Void> {
                         alert2.setContentText("Không thể xóa từ " + word.getKeyword());
                         alert2.showAndWait();
                     }
-
-
-
                 }
-
             }
         });
     }

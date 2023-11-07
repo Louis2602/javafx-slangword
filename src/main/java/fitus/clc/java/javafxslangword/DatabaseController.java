@@ -139,11 +139,26 @@ public class DatabaseController {
         return false;
     }
 
+    public void updateSlangWord(String oldKeyword, String keyword, String definition) {
+        if (dictionary.containsKey(oldKeyword)) {
+            dictionary.remove(oldKeyword);
+
+            List<String> newDefinitions = new ArrayList<>();
+            newDefinitions.add(definition);
+            dictionary.put(keyword, newDefinitions);
+
+            // Save the updated dictionary to the file
+            saveDictionaryToFile(SLANG_DB);
+        } else {
+            System.out.println("Error: Keyword not found in the dictionary.");
+        }
+    }
+
     public void addToHistory(String searchWord, String time) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(HISTORY_DB, true));
             bw.write(time);
-            bw.write(":");
+            bw.write(" - ");
             bw.write(searchWord);
             bw.write("\n");
             bw.close();
@@ -157,10 +172,9 @@ public class DatabaseController {
             BufferedReader br = new BufferedReader(new FileReader(HISTORY_DB));
             String line;
             while ((line = br.readLine()) != null) {
-                var data = line.split(":");
+                var data = line.split(" - ");
                 String time = data[0];
                 String keyword = data[1];
-
                 History history = new History(keyword, time);
 
                 historyList.add(history);

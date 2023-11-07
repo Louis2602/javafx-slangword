@@ -324,6 +324,11 @@ public class MainController {
             // If that is a completely new keyword
             newDictionary = dbController.addNewWord(newWord, newDefinition, true);
             refetchTable(newDictionary);
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Thông báo");
+            alert.setHeaderText("Thêm một từ mới vào từ điển Slang Word thành công!!");
+            alert.showAndWait();
         }
     }
 }
