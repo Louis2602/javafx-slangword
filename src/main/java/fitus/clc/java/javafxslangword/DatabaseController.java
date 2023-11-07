@@ -1,7 +1,6 @@
 package fitus.clc.java.javafxslangword;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.*;
 
 
@@ -35,6 +34,7 @@ public class DatabaseController {
                     System.out.println("Error line: " + finalLine);
                 }
             }
+            br.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,7 +75,7 @@ public class DatabaseController {
         return searchResults;
     }
 
-    public TreeMap<String, List<String>>  getSWByIndex(int index) {
+    public TreeMap<String, List<String>> getSWByIndex(int index) {
         int currentIndex = 0;
         TreeMap<String, List<String>> randomWord = new TreeMap<>();
         for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
@@ -87,6 +87,46 @@ public class DatabaseController {
         return randomWord;
     }
 
+    public TreeMap<String, List<String>> addNewWord(String newWord, String newDefinition, Boolean isOverride) {
+        if (!isOverride) {
+            // If keyword exists, user choose duplicate, append new definition into it
+            List<String> existingDefinitions = dictionary.get(newWord);
+            existingDefinitions.add(newDefinition);
+        } else {
+            // If keyword exists, user choose override, replace all exists keyword with the new one
+            List<String> newDefinitions = new ArrayList<>();
+            newDefinitions.add(newDefinition);
+            dictionary.put(newWord, newDefinitions);
+        }
+
+        // Save the updated dictionary to the file
+        saveDictionaryToFile(SLANG_DB);
+
+        return dictionary;
+    }
+
+
+
+    public void saveDictionaryToFile(String filePath) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
+            for (Map.Entry<String, List<String>> entry : dictionary.entrySet()) {
+                String word = entry.getKey();
+                List<String> definitions = entry.getValue();
+                StringBuilder line = new StringBuilder(word);
+                line.append("`");
+                for (String definition : definitions) {
+                    line.append(definition);
+                    line.append("| ");
+                }
+                bw.write(line.toString());
+                bw.newLine();
+            }
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public TreeMap<String, List<String>> getDictionary() {
         return dictionary;

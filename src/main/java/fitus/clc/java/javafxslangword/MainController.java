@@ -27,13 +27,13 @@ public class MainController {
     /*
     Add New Word Pane
      */
-    /* @FXML
+    @FXML
     private TextField newWordInput;
     @FXML
-    private TextArea newDefinitionInput;
+    private TextField newDefinitionInput;
     @FXML
     private Button addBtn;
-    *//*
+    /*
     Search Pane
      */
     @FXML
@@ -98,7 +98,7 @@ public class MainController {
         searchInputProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue.isEmpty()) {
                 // When the search input is empty, refetch the table
-                refetchTable();
+                refetchTable(dbController.getDictionary());
             }
         });
 
@@ -109,7 +109,7 @@ public class MainController {
         // Populate the TableView
         addDataToTable(dictionary);
 
-        actionsColumn.setCellFactory(param -> new SWAction());
+        actionsColumn.setCellFactory(param -> new SWAction(dbController));
 
         resetBtn.setOnAction(this::handleReset);
 
@@ -117,13 +117,12 @@ public class MainController {
         setEverydayWord();
     }
 
-    private void refetchTable() {
+    private void refetchTable(TreeMap<String, List<String>> dictionary) {
         searchInput.setStyle(null);
         infoLabel.setVisible(false);
         SWTable.getItems().clear(); // Clear the table
 
         // Repopulate the table with the original dictionary data
-        TreeMap<String, List<String>> dictionary = dbController.getDictionary();
         addDataToTable(dictionary);
     }
 
@@ -136,7 +135,6 @@ public class MainController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == ButtonType.OK) {
-            // ... user chose OK
             try {
                 //override slang word file to slang-default.txt
                 Files.copy(Paths.get(dbController.SLANG_DEFAULT_DB), Paths.get(dbController.SLANG_DB), StandardCopyOption.REPLACE_EXISTING);
@@ -163,12 +161,6 @@ public class MainController {
             infoLabel.setVisible(true);
             infoLabel.setStyle("-fx-text-fill: red");
             infoLabel.setText("Keyword is required!!");
-
-            SWTable.getItems().clear(); // Clear the table
-
-            // Repopulate the table with the original dictionary data
-            TreeMap<String, List<String>> dictionary = dbController.getDictionary();
-            addDataToTable(dictionary);
         } else {
             searchInput.setStyle(null);
             infoLabel.setVisible(false);
@@ -187,14 +179,12 @@ public class MainController {
                     if (foundWords.size() != 0) {
                         infoLabel.setStyle("-fx-text-fill: green");
                         infoLabel.setText("Tìm thấy (" + foundWords.size() + " kết quả) trong: " + timeElapsed + " ms");
-                    }
-                    else {
+                    } else {
                         infoLabel.setStyle("-fx-text-fill: red");
                         infoLabel.setText("Xin lỗi, không tìm thấy từ lóng");
                         return;
                     }
                     addDataToTable(foundWords);
-
                     break;
                 case "Tìm kiếm theo định nghĩa":
                     startTime = System.currentTimeMillis();
@@ -233,7 +223,7 @@ public class MainController {
         int index = dayOfYear % dbController.getSize();
 
         // Retrieve word and definitions
-        TreeMap<String, List<String>>  randomWord = dbController.getSWByIndex(index);
+        TreeMap<String, List<String>> randomWord = dbController.getSWByIndex(index);
 
         for (Map.Entry<String, List<String>> entry : randomWord.entrySet()) {
             String a = entry.getKey();
@@ -258,4 +248,50 @@ public class MainController {
         otdDefinitionLabel.setTooltip(tooltipDefinition);
     }
 
+    public void handleAdd(ActionEvent event) {
+        String newWord = newWordInput.getText();
+        String newDefinition = newDefinitionInput.getText();
+
+        if (newWord.isEmpty()) {
+            newWordInput.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            return;
+        } else if (newDefinition.isEmpty()) {
+            newDefinitionInput.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            return;
+        }
+        newWordInput.setStyle(null);
+        newDefinitionInput.setStyle(null);
+
+        //clear input fields
+        newWordInput.clear();
+        newDefinitionInput.clear();
+
+        TreeMap<String, List<String>> newDictionary;
+
+        // If found exist word in DB
+        if (dbController.searchByWord(newWord).size() != 0) {
+            ButtonType duplicateBtn = new ButtonType("Tạo bản sao", ButtonBar.ButtonData.OK_DONE);
+            ButtonType overrideBtn = new ButtonType("Thay thế", ButtonBar.ButtonData.OK_DONE);
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Từ " + newWord + " đã tồn tại, bạn muốn Tạo bản sao (duplicate) hay Ghi đè (override)?",
+                    duplicateBtn, overrideBtn);
+            alert.setTitle("Xác nhận");
+            alert.setHeaderText("Bạn đang thêm một từ mới vào từ điển Slang Word");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == duplicateBtn) {
+                newDictionary = dbController.addNewWord(newWord, newDefinition, false);
+                refetchTable(newDictionary);
+            } else if (result.isPresent() && result.get() == overrideBtn) {
+                newDictionary = dbController.addNewWord(newWord, newDefinition, true);
+                refetchTable(newDictionary);
+            }
+        } else {
+            // If that is a completely new keyword
+            newDictionary = dbController.addNewWord(newWord, newDefinition, true);
+            refetchTable(newDictionary);
+        }
+    }
 }
