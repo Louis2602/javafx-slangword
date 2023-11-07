@@ -4,11 +4,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -20,6 +23,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -80,6 +85,13 @@ public class MainController {
     @FXML
     private Label todayLabel;
 
+    /*
+    Quiz Pane
+     */
+    private Parent root;
+    private Scene scene;
+    private Stage stage;
+
     private DatabaseController dbController;
 
 
@@ -121,7 +133,7 @@ public class MainController {
         // Load history
         textColumn.setCellValueFactory(new PropertyValueFactory<>("keyword"));
         timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
-        for(History history: historyList) {
+        for (History history : historyList) {
             addHistoryToTable(history);
         }
 
@@ -245,7 +257,7 @@ public class MainController {
     }
 
     public void addHistoryToTable(History history) {
-            historyTable.getItems().add(history);
+        historyTable.getItems().add(history);
     }
 
     private void setEverydayWord() {
@@ -313,12 +325,14 @@ public class MainController {
 
             Optional<ButtonType> result = alert.showAndWait();
 
-            if (result.isPresent() && result.get() == duplicateBtn) {
-                newDictionary = dbController.addNewWord(newWord, newDefinition, false);
-                refetchTable(newDictionary);
-            } else if (result.isPresent() && result.get() == overrideBtn) {
-                newDictionary = dbController.addNewWord(newWord, newDefinition, true);
-                refetchTable(newDictionary);
+            if (result.isPresent()) {
+                if (result.get() == duplicateBtn) {
+                    newDictionary = dbController.addNewWord(newWord, newDefinition, false);
+                    refetchTable(newDictionary);
+                } else if (result.get() == overrideBtn) {
+                    newDictionary = dbController.addNewWord(newWord, newDefinition, true);
+                    refetchTable(newDictionary);
+                }
             }
         } else {
             // If that is a completely new keyword
@@ -330,5 +344,30 @@ public class MainController {
             alert.setHeaderText("Thêm một từ mới vào từ điển Slang Word thành công!!");
             alert.showAndWait();
         }
+    }
+
+    private void initializeQuiz(ActionEvent event, int type) throws IOException {
+        FXMLLoader quizLoader = new FXMLLoader(getClass().getResource("quiz-view.fxml"));
+        Parent root = quizLoader.load();
+        Stage quizStage = new Stage();
+        quizStage.initModality(Modality.APPLICATION_MODAL);
+        quizStage.initOwner(((Node) event.getSource()).getScene().getWindow());
+        Scene scene = new Scene(root);
+        quizStage.setScene(scene);
+        quizStage.setTitle("Quiz");
+
+        QuizController quizController = quizLoader.getController();
+        quizController.setGameType(type);
+        quizController.startGame();
+
+        quizStage.showAndWait(); // Show the quiz scene and wait
+    }
+
+    public void playGameGuessingDef(ActionEvent event) throws IOException {
+        initializeQuiz(event, 0);
+    }
+
+    public void playGameGuessingWord(ActionEvent event) throws IOException {
+        initializeQuiz(event, 1);
     }
 }

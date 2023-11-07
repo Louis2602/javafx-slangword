@@ -11,6 +11,8 @@ public class DatabaseController {
     private final TreeMap<String, List<String>> dictionary = new TreeMap<>();
     private final ArrayList<History> historyList = new ArrayList<>();
 
+    private ArrayList<String> wordList = new ArrayList<>();
+    private ArrayList<String> definitionList = new ArrayList<>();
 
     DatabaseController() {
         try {
@@ -31,6 +33,8 @@ public class DatabaseController {
                     String[] definitions = split[1].split("\\| ");
 
                     Collections.addAll(definitionsList, definitions);
+                    wordList.add(split[0]);
+                    definitionList.add(String.join(", ", definitions));
                     dictionary.put(split[0], definitionsList);
                 } catch (Exception e) {
                     System.out.println("Error line: " + finalLine);
@@ -107,7 +111,6 @@ public class DatabaseController {
     }
 
 
-
     public void saveDictionaryToFile(String filePath) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
@@ -130,8 +133,8 @@ public class DatabaseController {
     }
 
     public Boolean deleteSlangWord(String keyword) {
-        String returned_value = ((List<String>)dictionary.remove(keyword)).toString();
-        if(returned_value != null) {
+        String returned_value = ((List<String>) dictionary.remove(keyword)).toString();
+        if (returned_value != null) {
             // delete successfully, update DB
             saveDictionaryToFile(SLANG_DB);
             return true;
@@ -178,7 +181,7 @@ public class DatabaseController {
                 History history = new History(keyword, time);
 
                 historyList.add(history);
-           }
+            }
             return historyList;
         } catch (IOException e) {
             e.printStackTrace();
@@ -190,7 +193,11 @@ public class DatabaseController {
         return dictionary;
     }
 
-    public ArrayList<History> getHistory() {
-        return historyList;
+    public ArrayList<String> getWordList() {
+        return wordList;
+    }
+
+    public ArrayList<String> getDefinitionList() {
+        return definitionList;
     }
 }

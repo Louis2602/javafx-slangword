@@ -6,7 +6,6 @@ public class History {
     private String keyword;
     private String time;
 
-
     public History(String keyword, String time) {
         this.keyword = keyword;
         this.time = time;
