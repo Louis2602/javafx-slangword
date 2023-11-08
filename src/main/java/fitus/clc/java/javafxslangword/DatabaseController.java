@@ -182,11 +182,10 @@ public class DatabaseController {
 
                 historyList.add(history);
             }
-            return historyList;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return historyList;
     }
 
     public TreeMap<String, List<String>> getDictionary() {

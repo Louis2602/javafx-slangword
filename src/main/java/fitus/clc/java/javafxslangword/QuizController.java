@@ -103,7 +103,7 @@ public class QuizController {
                     randomAnswers.add(randomWord);
                     Collections.shuffle(randomAnswers);
 
-                    question.setText("Q" + (questionCount + 1) + ": What does '" + correctAnswer + "' mean?");
+                    question.setText("Q" + (questionCount + 1) + ": What does `" + correctAnswer + "` mean?");
                     questionTooltip = new Tooltip(question.getText());
                     question.setTooltip(questionTooltip);
 
@@ -143,7 +143,15 @@ public class QuizController {
         String selectedAnswer = clickedButton.getText();
         addShakeEffect(clickedButton);
 
-        String keyword = question.getText().split(" ")[3].replace("'", "");
+        // Split the string based on single quotes to retrieve the keyword
+        String[] parts = question.getText().split("`");
+        String keyword = "";
+        if (parts.length >= 3) {
+            // Extract the content inside the single quotes
+            String contentInsideSingleQuotes = parts[1];
+            keyword = contentInsideSingleQuotes;
+        }
+
         String answer;
 
         switch (type) {

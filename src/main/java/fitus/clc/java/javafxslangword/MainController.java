@@ -192,12 +192,6 @@ public class MainController {
         String keyword = searchInput.getText();
         String option = searchOption.getValue();
 
-        // Add search word to history
-        Date date = new java.util.Date();
-        dbController.addToHistory(keyword, date.toString());
-        History history = new History(keyword, date.toString());
-        addHistoryToTable(history);
-
         if (keyword.isEmpty()) {
             searchInput.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
             infoLabel.setVisible(true);
@@ -206,6 +200,12 @@ public class MainController {
         } else {
             searchInput.setStyle(null);
             infoLabel.setVisible(false);
+
+            // Add search word to history
+            Date date = new java.util.Date();
+            dbController.addToHistory(keyword, date.toString());
+            History history = new History(keyword, date.toString());
+            addHistoryToTable(history);
 
             // Clear the table to remove existing data
             SWTable.getItems().clear();
