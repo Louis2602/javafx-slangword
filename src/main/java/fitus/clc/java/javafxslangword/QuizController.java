@@ -68,7 +68,7 @@ public class QuizController {
                     randomAnswers.add(correctAnswer);
                     Collections.shuffle(randomAnswers);
 
-                    question.setText("Q" + (questionCount + 1) + ": What does '" + randomWord + "' mean?");
+                    question.setText("Q" + (questionCount + 1) + ": What does `" + randomWord + "` mean?");
                     questionTooltip = new Tooltip(question.getText());
                     question.setTooltip(questionTooltip);
 
